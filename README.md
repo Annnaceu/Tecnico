@@ -1,108 +1,49 @@
-# LLM Summarizer API
 
-Este projeto é uma API Node.js desenvolvida com TypeScript e Express, que permite aos usuários submeter textos e receber resumos gerados por um serviço Python utilizando LangChain.
-O resumo gerado é salvo com o texto original e a versao resumida e traduzido conforme o idioma solicitado pelo usuário.
+# Projeto de Geração de Resumo de Texto com Hugging Face e LangChain
 
-## Estrutura do Projeto
+Este é um projeto desenvolvido como parte de uma aplicação para gerar resumos de textos de forma automática, utilizando modelos da Hugging Face e integração com o LangChain. O objetivo principal do projeto foi aplicar técnicas de Inteligência Artificial para gerar resumos concisos a partir de textos fornecidos.
 
-- **node-api/**: Contém a implementação da API Node.js.
-  - **src/**: Contém o código-fonte da API.
-    - **app.ts**: Ponto de entrada da aplicação.
-    - **index.ts**: Inicia o servidor.
-    - **routes/**: Define as rotas da API.
-      - **tasksRoutes.ts**: Gerencia as rotas relacionadas a tarefas.
-    - **repositories/**: Gerencia as tarefas em memória.
-      - **tasksRepository.ts**: Implementa a lógica de armazenamento de tarefas.
-- **python-llm/**: Contém a implementação do serviço Python.
-  - **app/**: Contém o código-fonte do serviço Python.
-    - **main.py**: Ponto de entrada da aplicação FastAPI.
-    - **services/**: Implementa a lógica de resumo de texto.
-      - **llm_service.py**: Interage com LangChain para gerar resumos.
+## Bibliotecas Necessárias
 
-## Environment
+Antes de executar o projeto, certifique-se de instalar as bibliotecas necessárias. Para isso, basta rodar o seguinte comando:
 
-**HF_TOKEN**: Token de acesso ao Hugging Face(https://huggingface.co/settings/tokens). Caso não tenha, crie uma conta e gere um token(gratuito).
+```bash
+pip install -r requirements.txt
+Ou, se preferir instalar manualmente, as bibliotecas principais utilizadas são:
 
-## Como Executar
+transformers: Usada para carregar e usar os modelos da Hugging Face.
+langchain: Utilizada para interagir de maneira eficaz com os modelos de linguagem.
+huggingface_hub: Para fazer a conexão com o Hugging Face e carregar os modelos.
+dotenv: Carregar variáveis de ambiente a partir de um arquivo .env.
+pipeline (do Hugging Face): Para facilitar a execução de tarefas de geração de texto.
+Como Utilizar
+Certifique-se de ter um token do Hugging Face. Você pode obtê-lo na Hugging Face, caso ainda não tenha.
+Crie um arquivo .env na raiz do seu projeto e adicione a seguinte linha com o seu token:
+env
+Copiar código
+HF_TOKEN=seu_token_aqui
+Execute o script para gerar resumos:
+bash
+Copiar código
+python gerar_resumo.py
+Você pode passar o texto para ser resumido, e o modelo irá gerar um resumo na língua que você especificar.
+Descrição do Projeto
+Neste projeto, criei uma aplicação que utiliza um modelo de linguagem da Hugging Face para gerar resumos de textos. O código foi implementado utilizando o LangChain para facilitar a integração com o modelo de IA. A ideia é usar a IA para gerar resumos rápidos e precisos de grandes blocos de texto.
 
-1. Clone o repositório.
-2. Navegue até o diretório do projeto.
-3. Instale as dependências dos projetos Node.js e Python:
-   ```bash
-   ./setup.sh install-node
-   ./setup.sh install-python
-   ```
-4. Inicie a API Node.js e o serviço Python:
-   ```bash
-   ./setup.sh start-node
-   ./setup.sh start-python
-   ```
-5. A API estará disponível em `http://localhost:3005`.
+Infelizmente, o resultado final do modelo não foi tão bom quanto eu esperava. No entanto, ainda acredito que a implementação demonstrou a capacidade de integrar múltiplas ferramentas para criar uma aplicação funcional de geração de texto.
 
-## Endpoints
+O que foi implementado:
+Integração com o modelo da Hugging Face: O modelo utilizado foi o "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5", carregado diretamente pela biblioteca transformers ou utilizando o HuggingFaceHub para facilitar a chamada do modelo.
+Uso de LangChain: O LangChain foi utilizado para ajudar na construção dos prompts e integração com o modelo de IA.
+Geração de Resumos: A aplicação foi projetada para gerar resumos em diferentes idiomas com base no texto fornecido.
+Agradecimentos
+Embora o resultado final não tenha sido o que eu esperava, agradeço a oportunidade de poder apresentar este projeto. E um grande sonho meu trabalhar nessa area 
 
-- POST **/tasks**: Cria uma nova tarefa com o texto a ser resumido.
-- GET **/tasks**: Lista todas as tarefas criadas.
+Estou à disposição para discussões, feedbacks e, quem sabe, novas oportunidades. Tenho certeza de que em outros projetos que estão no meu portfólio, você poderá ver melhores resultados.
 
-# Tarefas a serem realizadas
+Portfólio
+Caso queira ver outros projetos meus, com foco em Inteligência Artificial e Machine Learning, acesse meu portfólio. Lá, você encontrará mais implementações e exemplos de como utilizo essas tecnologias para resolver problemas reais.
 
-### No projeto Node.js
+https://github.com/Annnaceu/Annnaceu
 
-- No POST **/tasks**, a API deve receber um texto e um idioma e enviar para o serviço Python para gerar o resumo no idioma solicitado.
-
-  #### Parâmetros que devem ser recebidos pela API:
-
-  - `text`: Texto a ser resumido.
-  - `lang`: Idioma para qual o texto original deve ser traduzido.
-
-  #### Idiomas suportados:
-
-  - `pt`: Português.
-  - `en`: Inglês.
-  - `es`: Espanhol.
-  - Caso o idioma não seja suportado, retornar um erro com status 400 e a mensagem "Language not supported".
-
-- Deve ser possível acessar o resumo de uma tarefa através do endpoint GET **/tasks/:id**.
-
-  ### Deve retornar um JSON com as propriedades:
-
-  - `id`: Identificador da tarefa.
-  - `text`: Texto original.
-  - `summary`: Resumo gerado pelo serviço Python.
-  - `lang`: Idioma para qual o texto foi traduzido(solicitado pelo usuário).
-
-- Deve ser possível remover uma tarefa através do endpoint DELETE **/tasks/:id**.
-- Persistir as informações das tarefas em um arquivo JSON.
-
-### No projeto Python
-
-- Implementar a lógica de resumo de texto utilizando LangChain(Prompt) no idioma solicitado.
-  ### O resumo deve ser retornado em formato JSON, com a propriedades:
-  - `summary`: Resumo gerado.
-
-## Em ambos os projetos
-
-- Deve possuir uma rota inicial(/) que retorne um JSON com a propriedade `message` contendo a mensagem "API is running".
-
-### Observações
-
-- Após a conclusão, suba o projeto no seu repositório pessoal e envie o link para o recrutador.
-- Caso tenha alguma dúvida, entre em contato com o recrutador.
-
-## Texto de Exemplo
-
-```
-Diagnósticos médicos e decisões jurídicas: o papel da IA
-A justiça e a Medicina são considerados campos de alto risco. Neles é mais urgente do que em qualquer outra área estabelecer sistemas para que os humanos tenham sempre a decisão final.
-
-Os especialistas em IA trabalham para garantir a confiança dos usuários, para que o sistema seja transparente, que proteja as pessoas e que os humanos estejam no centro das decisões.
-
-Aqui entra em jogo o desafio do "doutor centauro". Centauros são modelos híbridos de algoritmo que combinam análise formal de máquina e intuição humana.
-
-Um "médico centauro + um sistema de IA" melhora as decisões que os humanos tomam por conta própria e que os sistemas de IA tomam por conta própria.
-
-O médico sempre será quem aperta o botão final; e o juiz quem determina se uma sentença é justa.
-```
-FONTE: https://www.bbc.com/portuguese/articles/c2kx2e74jyxo
-
-# Desejamos um bom desafio! 🚀
+Agradeço novamente pela chance e espero que possamos continuar a conversa!
