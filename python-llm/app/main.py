@@ -1,23 +1,42 @@
-import sys
-from dotenv import load_dotenv
-
-load_dotenv()
-sys.path = sys.path + ["./app"]
-
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from services.llm_service import LLMService
+from app.services.llm_service import generate_summary
 
 app = FastAPI()
-llm_service = LLMService()
 
+# Configurar CORS para permitir acesso de outras origens (Node.js)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3005"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
-class TextData(BaseModel):
+# Modelos para entrada e saída
+class TaskRequest(BaseModel):
     text: str
+    lang: str
 
+class TaskResponse(BaseModel):
+    summary: str
 
-@app.post("/summarize")
-async def summarize(data: TextData):
-    text = data.text
-    llm_service.summarize_text(text)
-    return "OK"
+# Rota inicial para verificar o status
+@app.get("/")
+def read_root():
+    return {"message": "API is running"}
+
+# Endpoint para geração de resumo
+@app.post("/summarize", response_model=TaskResponse)
+def summarize_task(task: TaskRequest):
+    supported_languages = ["pt", "en", "es"]
+    if task.lang not in supported_languages:
+        raise HTTPException(status_code=400, detail="Language not supported")
+    
+    try:
+        summary = generate_summary(task.text, task.lang)
+        return TaskResponse(summary=summary)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar o resumo: {str(e)}")
+

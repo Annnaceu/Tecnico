@@ -1,19 +1,41 @@
+from langchain.llms import HuggingFaceHub
+from langchain.prompts import PromptTemplate
 import os
-from langchain_openai import OpenAI
+from dotenv import load_dotenv
 
+load_dotenv()
 
-class LLMService:
-    def __init__(self):
-        # Aqui assumimos que há uma variável de ambiente HF_TOKEN configurada.
-        self.llm = OpenAI(
-            temperature=0.5,
-            top_p=0.7,
-            api_key=os.getenv("HF_TOKEN"),  # type: ignore
-            base_url="https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1",
+def generate_summary(text: str, lang: str) -> str:
+    hf_token = os.getenv("HF_TOKEN")
+    
+    if not hf_token:
+        raise ValueError("Token do Hugging Face não encontrado no ambiente.")
+    
+    try:
+        llm = HuggingFaceHub(
+            repo_id="OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",  # Modelo leve
+            model_kwargs={"temperature": 0.7, "max_new_tokens": 512},
+            huggingfacehub_api_token=hf_token,
         )
 
-    def summarize_text(self, text: str) -> str:
-        prompt = f"{text}"
+        prompt_template = PromptTemplate(
+            input_variables=["text", "lang"],
+            template=(
+                "Resuma o seguinte texto no idioma {lang}:\n"
+                "{text}\n\nResumo no idioma {lang}:" 
+            )
+        )
+        
+        prompt = prompt_template.format(text=text, lang=lang)
+        response = llm(prompt)
+        
+        return response.strip()
+    
+    except Exception as e:
+        raise RuntimeError(f"Erro ao gerar resumo: {str(e)}")
 
-        response = self.llm.invoke(prompt)
-        return response
+if __name__ == "__main__":
+    text = "Aqui está um exemplo de texto para ser resumido."
+    lang = "pt" 
+    
+    summary = generate_summary(text, lang)
